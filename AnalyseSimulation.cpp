@@ -19,8 +19,9 @@ int main()
 
     //----------------------------------------------------
     //      Path to the directory holding the .root files
-    char rootFileDirectoryPath[] = "/Users/lunapellegri/Google Drive/GEANT4/BaGeL/K600-ALBA-MT";
-    
+   //  char rootFileDirectoryPath[] = "/Users/lunapellegri/Google Drive/GEANT4/BaGeL/K600-ALBA-MT";
+    char rootFileDirectoryPath[] = "/home/luna/codes/geant_simulations/K600-ALBA-MT";
+
     char name[512];
     char filename[512];
     char condition[512];
