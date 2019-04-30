@@ -9,7 +9,8 @@
 #include <TPaveText.h>
 using namespace std;
 
-double FitFunction(double *x, double *pars){return exp(pars[0] * pow(log(x[0]),pars[1]));}
+double FitFunction(double *x, double *pars){return exp(pars[0] * pow(log(x[0]),0)+pars[1] * pow(log(x[0]),1)+pars[2] * pow(log(x[0]),2));}
+
 
 int main()
 {
@@ -26,7 +27,7 @@ int main()
    
 
    TGraphErrors *gre = new TGraphErrors(12);
-   gre->SetName("Graph0");
+   gre->SetName("Eff_152Eu");
    gre->SetTitle("Absolute Efficiency of all Clovers - Singles");
    gre->SetFillColor(1);
    gre->SetMarkerColor(2);
@@ -56,26 +57,26 @@ int main()
    gre->SetPoint(11,1408.006,0.009123962);
    gre->SetPointError(11,0.003,0.0004585596);
    
-   TF1 * f1 = new TF1("f1",FitFunction,200,1500,2);
-   //c1->SetLogy();
-   //c1->SetLogx();
-    f1->SetParameter(0,1);
-    f1->SetParameter(1,0);
-    //f1->SetParameter(2,1);
+   TF1 * fit1 = new TF1("f1",FitFunction,200,1500,3);
+    fit1->SetParameter(0,1);
+    fit1->SetParameter(1,0);
+    fit1->SetParameter(2,0);
+    fit1->SetLineColor(5);
+    fit1->SetLineStyle(2);
+    
     gre->Fit(f1,"BRME");
     gre->Draw("ap");
-    f1->Draw("same");
+    fit1->Draw("same");
     
-    Double_t a0,a1,a2, par[2];
-    //fit->GetParameters(par);
-    f1->GetParameters(par);
+    Double_t a0,a1,a2, par[3];
+    fit1->GetParameters(par);
     
-    a0=par[0];a1=par[1];
+    a0=par[0];a1=par[1];a2=par[2];
     
-    cout << endl << " par0  " << a0 <<"; par1 " << a1 << endl;
-    gStyle->SetOptFit(1);
+    cout << endl << " par0  " << a0 <<"; par1 " << a1 << "; par2 " << a2 << endl;
+    //gStyle->SetOptFit(1);
     
-   
+   /*
    
     TH1F *Graph_Graph1 = new TH1F("Graph_Graph1","Absolute Efficiency of all Clovers - Singles",100,128.3655,1524.34);
    Graph_Graph1->SetMinimum(0.006120487);
@@ -118,7 +119,7 @@ int main()
    pt->Draw();
    
     
-
+   */
     
     Int_t n = 20; //number of energy in the simulation
     
@@ -150,36 +151,72 @@ int main()
     Eff_Geant->SetMarkerColor(4);
     //Eff_Geant->Draw("AP");
     
-    TF1 *fit2 = new TF1("fit2",FitFunction,200,10000,2);
-    fit2->SetParameter(0,f1->GetParameter(0));
-    fit2->SetParameter(1,f1->GetParameter(1));
+    TF1 *fit2 = new TF1("fit2",FitFunction,400,10000,3);
+    fit2->SetParameter(0,fit1->GetParameter(0));
+    fit2->SetParameter(1,fit1->GetParameter(1));
+    fit2->SetParameter(1,fit1->GetParameter(2));
     fit2->SetLineColor(3);
+    fit2->SetLineStyle(2);
     
     Eff_Geant->Fit(fit2,"BRME");
     Eff_Geant->Draw("AP");
     fit2->Draw("same");
     
-    Double_t b0,b1, parb[2];
+    Double_t b0,b1,b2, parb[3];
     fit2->GetParameters(parb);
     
-    b0=parb[0]; b1=parb[1];
+    b0=parb[0]; b1=parb[1]; b2=parb[2];
     
-    cout << endl << " Fit2 par0  " << b0 <<"; Fit2 par1 " << b1 << endl;
-    gStyle->SetOptFit(1);
+    cout << endl << " Fit2 par0  " << b0 <<"; Fit2 par1 " << b1 <<"; Fit2 par2 " << b2 << endl;
+    //gStyle->SetOptFit(1);
+    
+    Double_t Eff_norm[20], normfact=0;
+
+    normfact=exp(a0 * pow(log(1000),0)+ a1 * pow(log(1000),1)+ a2 * pow(log(1000),2))/exp(b0 * pow(log(1000),0)+b1 * pow(log(1000),1)+b2 * pow(log(1000),2)); //at 1000keV
+    cout << "normfact= " << normfact << endl;
+    
+    for (int i=0; i<n; i++)
+    {
+        Eff_norm[i]=Eff[i]*normfact;
+    }
+    
+    TGraphErrors *Eff_Geant_norm = new TGraphErrors(n,En,Eff_norm,0,Err);
+    Eff_Geant_norm->SetName("Eff_Geant_norm");
+    Eff_Geant_norm->SetMarkerStyle(20);
+    Eff_Geant_norm->SetMarkerColor(1);
     
     
+    TF1 *fit3 = new TF1("fit3",FitFunction,400,10000,3);
+    fit3->SetParameter(0,fit2->GetParameter(0));
+    fit3->SetParameter(1,fit2->GetParameter(1));
+    fit3->SetParameter(1,fit2->GetParameter(2));
+    fit3->SetLineColor(2);
+    fit3->SetLineStyle(2);
     
-    TGraphErrors *g[2];
+    Eff_Geant_norm->Fit(fit3,"BRME");
+    Eff_Geant_norm->Draw("AP");
+    fit3->Draw("same");
+    
+    Double_t d0,d1,d2, pard[3];
+    fit3->GetParameters(pard);
+    
+    d0=pard[0]; d1=pard[1]; d2=pard[2];
+    
+    cout << endl << " Fit3 par0  " << d0 <<"; Fit3 par1 " << d1 <<"; Fit3 par2 " << d2 << endl;
+    
+    
+    TGraphErrors *g[3];
     TMultiGraph *mg = new TMultiGraph();
     
     g[0]=gre;
     g[1]=Eff_Geant;
+    g[2]=Eff_Geant_norm;
     
-    for (int j=0; j<2; j++) {
+    for (int j=0; j<3; j++) {
         mg->Add(g[j]);
     }
     
-    //mg->Draw("AP");
+    mg->Draw("AP");
     
 
     
