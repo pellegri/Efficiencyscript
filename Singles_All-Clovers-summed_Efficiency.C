@@ -1,7 +1,17 @@
 #include <fstream>
+#include <TMath.h>
+#include <TCanvas.h>
+#include <TF1.h>
+#include <TGraphErrors.h>
+#include <TStyle.h>
+#include <TMultiGraph.h>
+#include <TH1.h>
+#include <TPaveText.h>
 using namespace std;
 
-main()
+double FitFunction(double *x, double *pars){return exp(pars[0] * pow(log(x[0]),pars[1]));}
+
+int main()
 {
 //=========Macro generated from canvas: c1/c1
 //=========  (Thu Apr 25 15:00:14 2019) by ROOT version5.34/36
@@ -46,27 +56,15 @@ main()
    gre->SetPoint(11,1408.006,0.009123962);
    gre->SetPointError(11,0.003,0.0004585596);
    
-   //gre->Draw("ap");
-   // c1->SetLogy();
-    
-   /*
-    Double_t fitf(Double_t *x, Double_t *par)
-    {
-        //return (par[0]+pow(TMath::Log(x[0]),par[1]));
-        return (par[0]+x[0]*par[1]); // log-log graph
-    }
-
-    
-    TF1 *func = new TF1("fit",fitf,200,1500,2);
-    
-    
-    TF1 * f1 = new TF1("f1","[0]+[1]*TMath::Power(x,[1])");
-    c1.SetLogy();
-    c1.SetLogx();
-   // fit->Draw("A*");
-    //gre->Fit("fit");
-    gre->Fit("f1");
+   TF1 * f1 = new TF1("f1",FitFunction,200,1500,2);
+   //c1->SetLogy();
+   //c1->SetLogx();
+    f1->SetParameter(0,1);
+    f1->SetParameter(1,0);
+    //f1->SetParameter(2,1);
+    gre->Fit(f1,"BRME");
     gre->Draw("ap");
+    f1->Draw("same");
     
     Double_t a0,a1,a2, par[2];
     //fit->GetParameters(par);
@@ -77,9 +75,9 @@ main()
     cout << endl << " par0  " << a0 <<"; par1 " << a1 << endl;
     gStyle->SetOptFit(1);
     
-   */
    
-   TH1F *Graph_Graph1 = new TH1F("Graph_Graph1","Absolute Efficiency of all Clovers - Singles",100,128.3655,1524.34);
+   
+    TH1F *Graph_Graph1 = new TH1F("Graph_Graph1","Absolute Efficiency of all Clovers - Singles",100,128.3655,1524.34);
    Graph_Graph1->SetMinimum(0.006120487);
    Graph_Graph1->SetMaximum(0.03665947);
    Graph_Graph1->SetDirectory(0);
@@ -106,7 +104,7 @@ main()
    Graph_Graph1->GetZaxis()->SetTitleFont(42);
    gre->SetHistogram(Graph_Graph1);
    
-   gre->Draw("ap");
+   //gre->Draw("ap");
    
 
     
@@ -134,31 +132,32 @@ main()
         exit(1);   // call system to stop
     }
 
-    for (int i=0; i<n; i++) {
+    for (int i=0; i<n; i++)
+      {
         my_input_file >> En[i] >> Eff[i] >> Err[i];
         En[i]=En[i]*1000;
         Eff[i]=Eff[i]/100;
         Err[i]=Err[i]/100;
-        cout << En[i] << " keV " << Eff[i] << " " << Err[i] << endl;
-    
-    }
+        //cout << En[i] << " keV " << Eff[i] << " " << Err[i] << endl;
+      }
     
     my_input_file.close();
     
     
     TGraphErrors *Eff_Geant = new TGraphErrors(n,En,Eff,0,Err);
-    
+    Eff_Geant->SetName("Eff_Geant");
     Eff_Geant->SetMarkerStyle(20);
     Eff_Geant->SetMarkerColor(4);
     //Eff_Geant->Draw("AP");
     
+    TF1 *fit2 = new TF1("fit2",FitFunction,200,10000,2);
+    fit2->SetParameter(0,f1->GetParameter(0));
+    fit2->SetParameter(1,f1->GetParameter(1));
+    fit2->SetLineColor(3);
     
-    /*
-    
-    TF1 *func2 = new TF1("fit2",fitf,400,10000,2);
-    
-    Eff_Geant->Fit("fit2");
-    fit2->Draw("*");
+    Eff_Geant->Fit(fit2,"BRME");
+    Eff_Geant->Draw("AP");
+    fit2->Draw("same");
     
     Double_t b0,b1, parb[2];
     fit2->GetParameters(parb);
@@ -168,7 +167,7 @@ main()
     cout << endl << " Fit2 par0  " << b0 <<"; Fit2 par1 " << b1 << endl;
     gStyle->SetOptFit(1);
     
-    */
+    
     
     TGraphErrors *g[2];
     TMultiGraph *mg = new TMultiGraph();
@@ -180,7 +179,7 @@ main()
         mg->Add(g[j]);
     }
     
-    mg->Draw("AP");
+    //mg->Draw("AP");
     
 
     
@@ -193,8 +192,9 @@ main()
    //c1->SetSelected(c1);
   
     
-    
+   return 0;
 }
+
 
 
 
