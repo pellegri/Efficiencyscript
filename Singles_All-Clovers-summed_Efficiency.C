@@ -218,7 +218,20 @@ int main()
     
     mg->Draw("AP");
     
-
+    mg->SetTitle("Absolute Efficiency of all Clovers - Singles");
+    mg->GetXaxis()->SetTitle("Energy (keV)");
+    mg->GetXaxis()->SetLabelFont(42);
+    mg->GetXaxis()->SetLabelSize(0.035);
+    mg->GetXaxis()->SetTitleSize(0.035);
+    mg->GetXaxis()->SetTitleFont(42);
+    mg->GetYaxis()->SetTitle("Absolute Efficiency");
+    mg->GetYaxis()->SetLabelFont(42);
+    mg->GetYaxis()->SetLabelSize(0.035);
+    mg->GetYaxis()->SetTitleSize(0.035);
+    mg->GetYaxis()->SetTitleOffset(1.4);
+    mg->GetYaxis()->SetTitleFont(42);
+    
+    
     
    
     
